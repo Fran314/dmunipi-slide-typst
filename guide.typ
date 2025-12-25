@@ -124,7 +124,7 @@ In its most basic form, a Typst document is composed of headings (sections, subs
   ```
 ]
 
-Within this theme, a section creates a new `Table of Contents` slide, and a subsection creates a new slide having the subsection title as its header, and the section title as the subheader.
+Within this theme, a section creates a new _"Table of Contents"_ slide, and a subsection creates a new slide having the subsection title as its header, and the section title as the subheader.
 
 == Basic formatting
 
@@ -253,7 +253,9 @@ Typst also has functions, which are denoted by a `#`. Some common functions that
 - ```typ #image()``` to add images (`.png`, `.jpg`, `.gif`, `.svg`, `.pdf`, `.webp`), and ```typ #figure()``` to wrap content and add a caption
 - ```typ #table()``` and ```typ #grid()``` to organize content in grids and tables
 
-#v(1em)
+You can find all the documentation for these (and more!) functions by searching #link("https://typst.app/docs/")[here].
+
+#v(.5em)
 
 There are also the extremely powerful commands ```typ #set``` and ```typ #show``` which will take a while to understand and are usually used to change the global styling.
 
@@ -558,9 +560,9 @@ The rest of this guide is dedicated to a more advanced usage of the theme. It mi
 
 Anything after the ```typ #ending-slide()``` is countend as part of the appendix. The appendix is meant to be used as something that might be needed after the end of the presentation, but not strictly part of it (for example, some helping slides in case of questions).
 
-The sections of the appendix will not result in the "Table of Contents"-s of the main part, and the slides of the appendix won't be counted as part of the shown total.
+The sections of the appendix will not result in the _"Table of Contents"_-s of the main part, and the slides of the appendix won't be counted as part of the shown total.
 
-To disable this, you can set `config-store(appendix-after-ending: false)`
+To disable this, you can set `config-store(appendix-after-ending: false)`:
 
 ```typ
 #show: dmunipi-theme.with(
@@ -569,7 +571,41 @@ To disable this, you can set `config-store(appendix-after-ending: false)`
 )
 ```
 
+
+
+== "Only-in-this-section" customizations
+
+Any change applied through an ```typ #config-xyz()``` can also be applied to a whole block of content, instead of single slides, using the ```typ #set-config()``` command:
+
+```typ
+== Here a normal slide
+This slide has the "normal" color
+
+#set-config(config-colors(primary: rgb("#006565")))[
+  == A slide with different colors!
+  This slide has the updated color
+
+  == Another slide with different colors!
+  This slide too has the updated color!
+]
+```
+
 == "From-here-on" customizations
+
+Using the ```typ #show``` command, configs can also be activated _"from here on"_, meaning from the ```typ #show``` command until the end of the document, like the following example:
+
+```typ
+== Here a normal slide
+All the slides before this one (this included) will have the usual color
+
+#show: set-config.with(config-colors(primary: rgb("#006565")))
+== A slide with different colors!
+All the slides from here on will have the updated color
+```
+
+This usage of ```typ #show``` is a bit delicate, since it can be used only between slides and will throw an error otherwise.
+
+#set-config(config-colors(primary: rgb("#006565")))[ ]
 
 == Animation guidelines <animation-guidelines>
 

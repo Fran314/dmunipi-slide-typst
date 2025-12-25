@@ -1,7 +1,20 @@
 #import "@preview/touying:0.6.1": *
+#import "@preview/theorion:0.4.1": *
+
+// Fixes alignment of itemize and enumerations when the item has unusual height
+// (eg if it has math or symbols)
+#import "@preview/itemize:0.2.0" as el
+
 #import "./utils.typ": *
 
-#import "@preview/theorion:0.4.1": *
+/// ------------------------------------------------
+/// Simple overrides
+/// ------------------------------------------------
+///
+/// This section contains simple overrides which aim to simplify the usage
+/// of the theme, basically by obscuring the `touying` layer
+
+#let set-config(config, body) = touying-set-config(config, body)
 
 /// ------------------------------------------------
 /// Blocks
@@ -605,6 +618,9 @@
 
         set heading(numbering: "1")
         set text(size: 18pt, font: "Roboto")
+
+        show: el.default-enum-list
+
 
         body
       },
