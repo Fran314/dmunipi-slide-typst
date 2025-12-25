@@ -625,7 +625,7 @@ Similarly, with a combination of ```typ #place``` and ```typ #pause``` you can e
 
 Please don't. It's possible, but don't.
 
-== Even animations: `#alternatives`
+== Even more animations: `#alternatives`
 
 Speaking of animations that don't behave nicely with handout mode, there is also ```typ #alternatives```, which is be listed for sake of completeness but I don't recommend using for the same reasons as the slide before.
 
