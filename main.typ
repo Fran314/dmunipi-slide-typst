@@ -38,6 +38,9 @@
 
     /// Changes the stile of statements such as theorems, definitions...
     // headless-statements: false,
+
+    /// Automatically starts the appendix after the ending slide
+    // appendix-after-ending: true,
   ),
 
   config-common(
@@ -54,12 +57,12 @@
   ///
   /// Try changing it, for example with `rgb("#006565")` as primary and
   /// `rgb("#00d595")` as secondary
-  // config-colors(
-  //   neutral-lightest: rgb("#ffffff"),
-  //   neutral-darkest: rgb("#000000"),
-  //   primary: rgb("#003476"),
-  //   secondary: rgb("#00b9f2"),
-  // ),
+  config-colors(
+    //   neutral-lightest: rgb("#ffffff"),
+    //   neutral-darkest: rgb("#000000"),
+    //   primary: rgb("#003476"),
+    //   secondary: rgb("#00b9f2"),
+  ),
 )
 
 #title-slide()

@@ -196,17 +196,34 @@
   setting: body => body,
   composer: auto,
   ..bodies,
-) = touying-slide-wrapper(self => {
-  self = utils.merge-dicts(self, config, config-page(
-    fill: self.colors.neutral-lightest,
-  ))
+) = touying-slide-wrapper(self => context {
+  let freeze-slide-counter = self.at("freeze-slide-counter", default: false)
+  if self.store.appendix-after-ending {
+    let ending-exists = query(label("ending-slide")).len() > 0
+    if ending-exists {
+      let current-page = here().page()
+      let ending-page = locate(label("ending-slide")).page()
+      if current-page > ending-page {
+        freeze-slide-counter = true
+      }
+    }
+  }
 
-  self.store.title = title
-  self.store.subtitle = subtitle
+  // Required to create new-self because self here is read-only since it's
+  // inside context, which in turn is needed to have access to here()
+  let new-self = utils.merge-dicts(
+    self,
+    config,
+    config-page(fill: self.colors.neutral-lightest),
+    config-common(freeze-slide-counter: freeze-slide-counter),
+  )
+
+  new-self.store.title = title
+  new-self.store.subtitle = subtitle
 
   let new-setting = body => {
     show: std.align.with(horizon)
-    show: show-colors.with(self: self)
+    show: show-colors.with(self: new-self)
 
     show: setting
 
@@ -214,7 +231,7 @@
   }
 
   touying-slide(
-    self: self,
+    self: new-self,
     repeat: repeat,
     setting: new-setting,
     composer: composer,
@@ -246,7 +263,6 @@
 
   self.store.title = none
   self.store.subtitle = none
-
 
   let body = {
     show: show-colors.with(self: self)
@@ -518,11 +534,6 @@
   ))
 })
 
-#let freeze-slide-counter(body) = touying-set-config(
-  (freeze-slide-counter: true),
-  body,
-)
-
 
 /// Touying stargazer theme.
 ///
@@ -611,6 +622,7 @@
       subtitle: none,
       fancy-footer: false,
       headless-statements: false,
+      appendix-after-ending: true,
       header: self => {
         show: show-colors.with(self: self)
         set std.align(bottom)
@@ -650,7 +662,7 @@
             show: components.cell.with(inset: (x: 2.75em))
             set text(size: .75em)
 
-            if self.freeze-slide-counter == false {
+            if not self.freeze-slide-counter {
               context utils.slide-counter.display()
               h(.15em)
               [/]
@@ -674,7 +686,7 @@
           show: show-colors.with(self: self)
           show: components.cell.with(inset: (x: 2.75em))
           set text(size: .75em)
-          if self.freeze-slide-counter == false {
+          if not self.freeze-slide-counter {
             context utils.slide-counter.display()
             h(.15em)
             [/]

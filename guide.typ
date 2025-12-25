@@ -6,7 +6,7 @@
 
   short-title: [`dmunipi` theme],
   subtitle: [A guide on usage and customization of the theme],
-  course: [Master Degree in Mathematics],
+  course: [Here you should put the name of your course or degree],
   IDnumber: [025613],
 
   date: datetime.today(),
@@ -316,13 +316,13 @@ This theme comes with useful functions for statements such as theorems:
 
 There are also: `#definition`, `#lemma`, `#corollary`, `#proposition`, `#axiom`, `#postulate`, `#assumption`, `#property` and `#conjecture`!
 
-== `#pause` and `#meanwhile`
+== Animations: `#pause` and `#meanwhile`
 
 Of course, you might want to gradually display the content of the slide!
 
-You can use `#pause` to create a slide with only the content preceding the `#pause`.
+You can use ```typ #pause``` to create a slide with only the content preceding the ```typ #pause```.
 
-If there's some content that you want displayed despite the `#pause`, you can put it after a `#meanwhile`:
+If there's some content that you want displayed despite the ```typ #pause```, you can put it after a ```typ #meanwhile```:
 
 #v(1em)
 
@@ -345,35 +345,39 @@ If there's some content that you want displayed despite the `#pause`, you can pu
   ],
 )
 
-== `#uncover`
+== More animations: `#only` and `#uncover`
 
-If you need to be more precise with your showing and hiding, you can use `#uncover`!
+If you need more control on hiding your content, you can use ```typ #only``` and ```typ #uncover```!
 
-It is useful to show content only on a given interval of "subslides" while always reserving space for it.
+```typ #only``` and ```typ #uncover``` only show the given content on a specified interval, with the difference being that ```typ #uncover``` reserves space for the hiddend content, while ```typ #only``` doesn't.
+
+An interval `"n-m"` means that the content gets shown from frame `n` to frame `m`, where a missing `n` or `m` means, respectively, _"since the start"_ and _"until the end"_.
 
 #grid(
-  columns: (1fr, auto, 1fr),
+  columns: (2fr, auto, 1fr),
   gutter: 1em,
   align: horizon + left,
   ```typ
-  3… #pause 2… #pause 1… #pause Tadaa!
+  1… #pause 2… #pause 3… #pause Tadaa!
 
   #meanwhile
-  Display this #uncover("2-2")[$f(x) = x^2$] only on drum-roll `2`, and this #uncover("3-")[$f(x) = x^3$] after the third, but always reserve space for them
+  - show #only("2-3")[#emoji.star] from 2 to 3
+  - uncover #uncover("3-")[#emoji.sun] from 3 to end
   ```,
   emoji.arrow.r.filled,
   [
-    3… #pause 2… #pause 1… #pause Tadaa!
+    1… #pause 2… #pause 3… #pause Tadaa!
 
     #meanwhile
-    Display this #uncover("2-2")[$f(x) = x^2$] only on drum-roll `2`, and this #uncover("3-")[$f(x) = x^3$] after the third, but always reserve space for them
+    - show #only("2-3")[#emoji.star] from 2 to 3
+    - uncover #uncover("3-")[#emoji.sun] from 3 to end
   ],
 )
 
 #meanwhile
 #text(
   size: .8em,
-)[Note: there are also `#only` and `#alternatives`, but they don't behave nicely with handout mode and I suggest not to use them. If you want you can find more in the #link("https://touying-typ.github.io/docs/dynamic/complex")[documentation].]
+)[Note: depending on how you use ```typ #only``` and ```typ #uncover```, you might get some issues with #link(<handout-mode>)[handout mode]. There are some (possibly opinionated) #link(<animation-guidelines>)[animation guidelines] if you're interested in using them.]
 
 == `#slide`, `#title-slide` and more
 
@@ -424,11 +428,28 @@ You can change this behaviour by changing the text language with a simple ```typ
   ],
 )
 
+== More control over slides
+
+#slide(subtitle: "What?! A custom subtitle? That can't be!")[
+  Slides are automatically created for each "```typ == subsection```", but you can also choose to create them manually with the ```typ #slide()``` function!
+
+  This allows you to have more control on what gets displayed on the slide, for example you can have a custom subtitle, instead of having the section title:
+
+  ```typ
+  == More control over slides
+
+  #slide(subtitle: "What?! A custom subtitle? That can't be!")[
+    Slides are automatically created for each...
+  ]
+  ```
+]
+
+
 == Per-slide customizations
 
 Some of the following customization happen by changing some values inside of some `config-xyz()` in the initialization of the theme.
 
-These settings can also be changed on single slides! To do so, you must manually create a slide with ```typ #slide()``` and then pass the config with the values you want, such as the following:
+These settings can also be changed on single slides! To do so, you must pass the config with the values you want, such as the following:
 
 ```typ
 #slide(config: config-colors(primary: rgb("#006565")))[
@@ -444,32 +465,47 @@ If you need to use multiple `config-xyz()`, you can merge them using `utils.merg
 ]
 ```
 
+== Handout mode <handout-mode>
+
+Animations like ```typ #pause```, ```typ #meanwhile``` and ```typ #uncover``` are useful when presenting the slides, but are problematic if someone wants to print out the slides (for example to take notes on them).
+
+To remove all the animations and only create the "final" slide for each slide, you can use the handout mode, which is activated by enabling `config-common(handout: true)`
+
+```typ
+#show: dmunipi-theme.with(
+  // […]
+  config-common(handout: true),
+)
+```
+
 == Headless statements
 
-By default, statements such as theorems are rendered in a `#title-block` with the theorem title at the top. This might occupy too much space in some cases, and can be disabled by setting `config-store(headless-statements: true)`
+#slide(config: config-store(headless-statements: true))[
+  By default, statements such as theorems are rendered in a `#title-block` with the theorem title at the top. This might occupy too much space in some cases, and can be disabled by setting `config-store(headless-statements: true)`
 
+  #grid(
+    columns: (1fr, auto, 1fr),
+    gutter: 1em,
+    align: horizon + left,
+    ```typ
+    #show: dmunipi-theme.with(
+      // […]
+      config-store(
+        headless-statements: true,
+      ),
+    )
 
-#grid(
-  columns: (1fr, auto, 1fr),
-  gutter: 1em,
-  align: horizon + left,
-  ```typ
-  #show: dmunipi-theme.with(
-    // […]
-    config-store(
-      headless-statements: true,
-    ),
+    #theorem(title: "Euclid's Theorem")[
+      There are infinitely many primes.
+    ]
+    ```,
+    emoji.arrow.r.filled,
+    theorem(title: "Euclid's Theorem")[
+      There are infinitely many primes.
+    ],
   )
+]
 
-  #theorem(title: "Euclid's Theorem")[
-    There are infinitely many primes.
-  ]
-  ```,
-  emoji.arrow.r.filled,
-  [
-    #basic-block[#strong[Theorem (Euclid's Theorem):]#sym.space#emph[There are infinitely many primes.]]
-  ],
-)
 
 == Fancy footer
 
@@ -479,9 +515,7 @@ By default, statements such as theorems are rendered in a `#title-block` with th
   ```typ
   #show: dmunipi-theme.with(
     // […]
-    config-store(
-      fancy-footer: true,
-    ),
+    config-store(fancy-footer: true),
   )
   ```
 ]
@@ -506,20 +540,64 @@ By default, statements such as theorems are rendered in a `#title-block` with th
 ]
 
 
-== Advanced customization
+#ending-slide()
 
-These were the type of customization that come "pre-configured" in this theme, and are accessible through existing variables.
+= Advanced usage & customization
 
-Typst actually allows you to customize the styling of the document much more in depth, thanks to the commands ```typ #set``` and ```typ #show```
+== But wait... there's more!
+
+The part before the ending slide was the "basic" introduction of how to use Typst and this slide theme.
+
+What you have read so far should be more than enough for your typical presentation, but there's plenty more that can be done or customized!
 
 #v(1em)
 
-Explaining the usage of these commands is above the purpose of this guide. If you're interested, you will find everything you need to start in the #link("https://typst.app/docs/tutorial/advanced-styling/")[documentation].
+The rest of this guide is dedicated to a more advanced usage of the theme. It might be useful to get comfortable with the commands ```typ #set``` and ```typ #show```, for which you can find everything you need to start in the #link("https://typst.app/docs/tutorial/advanced-styling/")[documentation].
 
-#ending-slide()
+== Appendix
 
-#show: freeze-slide-counter
+Anything after the ```typ #ending-slide()``` is countend as part of the appendix. The appendix is meant to be used as something that might be needed after the end of the presentation, but not strictly part of it (for example, some helping slides in case of questions).
 
+The sections of the appendix will not result in the "Table of Contents"-s of the main part, and the slides of the appendix won't be counted as part of the shown total.
+
+To disable this, you can set `config-store(appendix-after-ending: false)`
+
+```typ
+#show: dmunipi-theme.with(
+  // […]
+  config-store(appendix-after-ending: false),
+)
+```
+
+== "From-here-on" customizations
+
+== Animation guidelines <animation-guidelines>
+
+While ```typ #pause``` displays the hidden content on the last animation slide, animations like ```typ #only``` and ```typ #uncover``` (and another, see next slide) don't do so necessarily.
+
+The issue is that in handout mode, only the last frame of each animation is shown, meaning that content that doesn't go _"until the end"_ will not show up in handout mode.
+
+#v(1em)
+
+I suggest to *only* use intervals of the type `"n-"` in order not to have issues with handout mode.
+
+#v(1em)
+
+Similarly, with a combination of ```typ #place``` and ```typ #pause``` you can effectively end up with some background content hidden by foreground content on the last frame.
+
+#v(1em)
+
+Please don't. It's possible, but don't.
+
+== Even animations: `#alternatives`
+
+Speaking of animations that don't behave nicely with handout mode, there is also ```typ #alternatives```, which is be listed for sake of completeness but I don't recommend using for the same reasons as the slide before.
+
+```typ #alternatives``` which switches between two or more contents depending on the frame, meaning that ```typ #alternatives[A][B]``` will render as `A` on the first frame and `B` on the second frame
+
+#v(1em)
+
+You can find more informations about it in the #link("https://touying-typ.github.io/docs/dynamic/complex")[documentation].
 
 = Troubleshooting
 
