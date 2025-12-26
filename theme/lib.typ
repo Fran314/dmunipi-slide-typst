@@ -14,13 +14,35 @@
 /// This section contains simple overrides which aim to simplify the usage
 /// of the theme, basically by obscuring the `touying` layer
 
+/// Update configurations for specific sections of the presentation.
+/// This function allows you to temporarily override theme configurations for a portion
+/// of your slides, such as changing colors or other settings for specific sections.
+///
+/// Examples:
+///
+/// ```typ
+/// // Apply to a specific block of content
+/// #set-config(config-colors(primary: purple))[
+///   == A slide with purple
+///   == Another slide with purple
+/// ]
+///
+/// // Apply from here onwards
+/// #show: set-config.with(config-colors(primary: purple))
+/// == All slides from here will use purple
+/// ```
+///
+/// - config (dictionary): The configuration overrides to apply. Use `config-xxx` functions
+///   to specify the configuration.
+///
+/// - body (content): The content to which the configuration applies.
 #let set-config(config, body) = touying-set-config(config, body)
 
 /// ------------------------------------------------
 /// Blocks
 /// ------------------------------------------------
 
-#let _basic-block = (self: none, body) => {
+#let _basic-block(self: none, body) = {
   block(
     fill: self.colors.primary.lighten(90%),
     width: 100%,
@@ -29,9 +51,20 @@
     body,
   )
 }
-#let basic-block = body => touying-fn-wrapper(_basic-block.with(body))
 
-#let _title-block = (self: none, title: none, body) => {
+/// Creates a basic colored block with rounded corners.
+///
+/// Example:
+///
+/// ```typ
+/// #basic-block[This is some content]
+/// ```
+///
+/// - body (content): The content to display inside the block.
+#let basic-block(body) = touying-fn-wrapper(_basic-block.with(body))
+
+
+#let _title-block(self: none, title: none, body) = {
   grid(
     columns: 1,
     row-gutter: 0pt,
@@ -52,7 +85,19 @@
     ),
   )
 }
-#let title-block = (title: none, body) => touying-fn-wrapper(_title-block.with(
+
+/// Creates a block with a colored title header and content area.
+///
+/// Example:
+///
+/// ```typ
+/// #title-block(title: [This is the title])[This is the content]
+/// ```
+///
+/// - title (content): The title to display in the header.
+///
+/// - body (content): The content to display in the block.
+#let title-block(title: none, body) = touying-fn-wrapper(_title-block.with(
   title: title,
   body,
 ))
@@ -61,7 +106,7 @@
 /// Slide show rules
 /// ------------------------------------------------
 
-#let invert-colorscheme = self => {
+#let invert-colorscheme(self) = {
   utils.merge-dicts(self, config-colors(
     neutral-lightest: self.colors.primary,
     neutral-darkest: self.colors.neutral-lightest,
@@ -69,7 +114,7 @@
   ))
 }
 
-#let show-colors = (self: none, body) => {
+#let show-colors(self: none, body) = {
   set text(fill: self.colors.neutral-darkest)
 
   set list(marker: box(height: 0em, text(
@@ -100,9 +145,29 @@
 /// ------------------------------------------------
 /// Statements (theorems, definitions, ...)
 /// ------------------------------------------------
+///
+/// This section provides theorem-like environments including theorem, definition,
+/// lemma, corollary, proposition, axiom, postulate, assumption, property, and conjecture.
+///
+/// Each statement can be created with an optional title and can be referenced.
+/// The appearance can be controlled with the `headless-statements` configuration.
+///
+/// Examples:
+///
+/// ```typ
+/// #theorem[All primes greater than 2 are odd.]
+/// #definition(title: [Prime Number])[A natural number greater than 1...]
+/// ```
+///
+/// To reference a statement, give it a label:
+///
+/// ```typ
+/// #theorem[Some important result] <thm:important>
+/// See @thm:important for details.
+/// ```
 
 #let statement-counter = richer-counter(identifier: "statement")
-#let _make-statement = identifier => {
+#let _make-statement(identifier) = {
   let (_, _, frame, show-frame) = make-frame(
     identifier,
     theorion-i18n-map.at(identifier),
@@ -176,38 +241,36 @@
 
 /// Default slide function for the presentation.
 ///
-/// - title (string): The title of the slide. Default is `auto`.
+/// Examples:
 ///
-/// - config (dictionary): The configuration of the slide. You can use `config-xxx` to set the configuration of the slide. For more several configurations, you can use `utils.merge-dicts` to merge them.
+/// ```typ
+/// #slide[
+///   Content with automatic title from heading.
+/// ]
 ///
-/// - repeat (auto): The number of subslides. Default is `auto`, which means touying will automatically calculate the number of subslides.
+/// #slide(title: [Custom Title])[
+///   Content with custom title.
+/// ]
 ///
-///   The `repeat` argument is necessary when you use `#slide(repeat: 3, self => [ .. ])` style code to create a slide. The callback-style `uncover` and `only` cannot be detected by touying automatically.
+/// #slide(title: [Custom Title], config: config-colors(primary: purple))[
+///   Content with custom title.
+/// ]
+/// ```
 ///
-/// - setting (dictionary): The setting of the slide. You can use it to add some set/show rules for the slide.
+/// - title (content, auto): The title of the slide, displayed in the header. Default is `auto`,
+///   which displays the current level-2 heading.
 ///
-/// - composer (function): The composer of the slide. You can use it to set the layout of the slide.
+/// - subtitle (content, auto): The subtitle of the slide, displayed below the title in the header.
+///   Default is `auto`, which displays the current level-1 heading (section name).
 ///
-///   For example, `#slide(composer: (1fr, 2fr, 1fr))[A][B][C]` to split the slide into three parts. The first and the last parts will take 1/4 of the slide, and the second part will take 1/2 of the slide.
+/// - config (dictionary): Configuration overrides for this slide. Use `config-xxx` functions
+///   to specify the configuration. For multiple configurations, use `utils.merge-dicts` to merge them.
 ///
-///   If you pass a non-function value like `(1fr, 2fr, 1fr)`, it will be assumed to be the first argument of the `components.side-by-side` function.
-///
-///   The `components.side-by-side` function is a simple wrapper of the `grid` function. It means you can use the `grid.cell(colspan: 2, ..)` to make the cell take 2 columns.
-///
-///   For example, `#slide(composer: 2)[A][B][#grid.cell(colspan: 2)[Footer]]` will make the `Footer` cell take 2 columns.
-///
-///   If you want to customize the composer, you can pass a function to the `composer` argument. The function should receive the contents of the slide and return the content of the slide, like `#slide(composer: grid.with(columns: 2))[A][B]`.
-///
-/// - bodies (content): The contents of the slide. You can call the `slide` function with syntax like `#slide[A][B][C]` to create a slide.
+/// - bodies (content): The contents of the slide. You can pass multiple content blocks.
 #let slide(
   title: auto,
   subtitle: auto,
-  header: auto,
-  footer: auto,
   config: (:),
-  repeat: auto,
-  setting: body => body,
-  composer: auto,
   ..bodies,
 ) = touying-slide-wrapper(self => context {
   let freeze-slide-counter = self.at("freeze-slide-counter", default: false)
@@ -234,41 +297,36 @@
   new-self.store.title = title
   new-self.store.subtitle = subtitle
 
-  let new-setting = body => {
+  let setting = body => {
     show: std.align.with(horizon)
     show: show-colors.with(self: new-self)
-
-    show: setting
 
     offset-center(body)
   }
 
-  touying-slide(
-    self: new-self,
-    repeat: repeat,
-    setting: new-setting,
-    composer: composer,
-    ..bodies,
-  )
+  touying-slide(self: new-self, setting: setting, ..bodies)
 })
 
 
-/// Title slide for the presentation. You should update the information in the `config-info` function. You can also pass the information directly to the `title-slide` function.
+/// Title slide for the presentation. Displays the presentation information including title,
+/// subtitle, course, author, ID number, and date, along with the Università di Pisa logo.
 ///
-/// Example:
+/// You should set the information using the `config-info` function in the theme initialization.
 ///
-/// ```typst
-/// #show: stargazer-theme.with(
-///   config-info(
-///     title: [Title],
-///     logo: emoji.city,
-///   ),
-/// )
+/// Examples:
 ///
-/// #title-slide(subtitle: [Subtitle])
+/// ```typ
+/// #title-slide()
 /// ```
 ///
-/// - config (dictionary): The configuration of the slide. You can use `config-xxx` to set the configuration of the slide. For more several configurations, you can use `utils.merge-dicts` to merge them.
+/// Or with custom configuration:
+///
+/// ```typ
+/// #title-slide(config: config-colors(primary: purple))
+/// ```
+///
+/// - config (dictionary): Configuration overrides for this slide. Use `config-xxx` functions
+///   to specify the configuration. For multiple configurations, use `utils.merge-dicts` to merge them.
 #let title-slide(config: (:)) = touying-slide-wrapper(self => {
   self = utils.merge-dicts(self, config, config-page(
     fill: self.colors.neutral-lightest,
@@ -352,21 +410,33 @@
   touying-slide(self: self, body)
 })
 
-/// Outline slide for the presentation.
+/// Outline slide for the presentation. Displays a table of contents with all sections.
 ///
-/// - config (dictionary): is the configuration of the slide. You can use `config-xxx` to set the configuration of the slide. For more several configurations, you can use `utils.merge-dicts` to merge them.
+/// The outline automatically excludes content after the ending slide if present.
+/// The appearance can be customized using `toc-marker` and `toc-numbering` in `config-store`.
 ///
-/// - title (string): is the title of the outline. Default is `utils.i18n-outline-title`.
+/// Examples:
 ///
-/// - level (int, none): is the level of the outline. Default is `none`.
+/// ```typ
+/// #outline-slide()
+/// ```
 ///
-/// - numbered (boolean): is whether the outline is numbered. Default is `true`.
+/// Or with custom title:
+///
+/// ```typ
+/// #outline-slide(title: [Contents])
+/// ```
+///
+/// - config (dictionary): Configuration overrides for this slide. Use `config-xxx` functions
+///   to specify the configuration. For multiple configurations, use `utils.merge-dicts` to merge them.
+///
+/// - title (content): The title of the outline. Default is "Table of Contents" (localized).
+///
+/// - subtitle (content, auto): The subtitle displayed in the header. Default is `auto`.
 #let outline-slide(
   config: (:),
   title: i18n-table-of-contents,
   subtitle: auto,
-  numbered: false,
-  ..args,
 ) = touying-slide-wrapper(self => {
   self.store.title = title
   self.store.subtitle = subtitle
@@ -378,13 +448,6 @@
     config-page(fill: self.colors.neutral-lightest, footer: none),
     config-common(freeze-slide-counter: true),
   )
-
-  let bullet = none
-  let bullet = text(size: 1.5em, sym.triangle.filled.small.r)
-  // let bullet = text(size: .75em, sym.hexa.filled)
-  // let bullet = text(size: 2.5em, sym.bullet, baseline: .025em)
-  // let bullet = text(size: 1em, emoji.bee, baseline: -.1em)
-  // let bullet = text(size: 1em, emoji.frog, baseline: -.15em)
 
   let body = {
     set align(horizon)
@@ -418,12 +481,14 @@
           v(1fr)
 
           let content = ()
-          if bullet != none {
-            content.push(box(height: 0em, bullet))
+          if self.store.toc-marker != none {
+            content.push(box(height: 0em, self.store.toc-marker))
           }
-          if numbered {
+          if self.store.toc-numbering != none {
             content.push({
-              numbering("1.", ..counter(heading).at(it.element.location()))
+              numbering(self.store.toc-numbering, ..counter(heading).at(
+                it.element.location(),
+              ))
               h(-.25em)
             })
           }
@@ -434,7 +499,7 @@
 
           stack(dir: ltr, spacing: .5em, ..content)
         },
-        ..args.named(),
+        // ..args.named(),
       )
     }
     v(2fr)
@@ -444,42 +509,74 @@
 })
 
 
-/// New section slide for the presentation. You can update it by updating the `new-section-slide-fn` argument for `config-common` function.
+/// New section slide displayed automatically at each new section (level-1 heading).
+/// This slide shows the table of contents with the current section highlighted.
 ///
-/// Example: `config-common(new-section-slide-fn: new-section-slide.with(numbered: false))`
+/// By default, this slide is shown for every section. You can disable it globally by setting
+/// `section-slides: false` in the theme initialization, or skip it for specific sections by
+/// adding the `<touying:skip>` label after the section heading.
 ///
-/// - config (dictionary): is the configuration of the slide. You can use `config-xxx` to set the configuration of the slide. For more several configurations, you can use `utils.merge-dicts` to merge them.
+/// Examples:
 ///
-/// - title (content, function): is the title of the section. The default is `utils.i18n-outline-title`.
+/// ```typ
+/// = Introduction
+/// // A table of contents slide is automatically created here
 ///
-/// - level (int): is the level of the heading. The default is `1`.
+/// == First Slide
+/// Content...
 ///
-/// - numbered (boolean): is whether the heading is numbered. The default is `true`.
+/// = Background <touying:skip>
+/// // No table of contents slide here due to the label
 ///
-/// - body (none): is the body of the section. It will be passed by touying automatically.
+/// == Another Slide
+/// Content...
+/// ```
+///
+/// You can also manually call this function:
+///
+/// ```typ
+/// #new-section-slide(title: [Custom Title])
+/// ```
+///
+/// - config (dictionary): Configuration overrides for this slide. Use `config-xxx` functions
+///   to specify the configuration. For multiple configurations, use `utils.merge-dicts` to merge them.
+///
+/// - title (content): The title of the slide. Default is "Table of Contents" (localized).
+///
+/// - subtitle (content, auto): The subtitle displayed in the header. Default is `auto`.
+///
+/// - body (content): The section body, passed automatically by touying.
 #let new-section-slide(
   config: (:),
   title: i18n-table-of-contents,
   subtitle: auto,
-  numbered: false,
-  ..args,
   body,
-) = outline-slide(
-  config: config,
-  title: title,
-  subtitle: subtitle,
-  numbered: numbered,
-  ..args,
-  body,
-)
+) = outline-slide(config: config, title: title, subtitle: subtitle)
 
 
 
-/// Focus on some content.
+/// Focus slide for emphasizing important content with large text, centered on the slide.
 ///
-/// Example: `#focus-slide[Wake up!]`
+/// This slide has no header or footer, and does not increment the slide counter.
 ///
-/// - config (dictionary): is the configuration of the slide. You can use `config-xxx` to set the configuration of the slide. For more several configurations, you can use `utils.merge-dicts` to merge them.
+/// Examples:
+///
+/// ```typ
+/// #focus-slide[Wake up!]
+/// ```
+///
+/// Or with custom configuration:
+///
+/// ```typ
+/// #focus-slide(config: config-colors(primary: purple))[
+///   Important message!
+/// ]
+/// ```
+///
+/// - config (dictionary): Configuration overrides for this slide. Use `config-xxx` functions
+///   to specify the configuration. For multiple configurations, use `utils.merge-dicts` to merge them.
+///
+/// - body (content): The content to display, typically a short phrase or key message.
 #let focus-slide(
   config: (:),
   body,
@@ -508,13 +605,34 @@
 
 
 
-/// End slide for the presentation.
+/// Ending slide for the presentation. Displays a thank you message by default.
+/// This slide marks the end of the main presentation; any slides after this are
+/// considered appendix material.
 ///
-/// - config (dictionary): is the configuration of the slide. You can use `config-xxx` to set the configuration of the slide. For more several configurations, you can use `utils.merge-dicts` to merge them.
+/// If `appendix-after-ending: true` is set (default), slides after this will not increment
+/// the slide counter, allowing you to add backup slides that don't affect the slide count.
 ///
-/// - title (string): is the title of the slide. The default is `none`.
+/// Examples:
 ///
-/// - body (array): is the content of the slide.
+/// ```typ
+/// #ending-slide()
+/// ```
+///
+/// Or with custom content:
+///
+/// ```typ
+/// #ending-slide[
+///   Thank you!
+///   #v(1em)
+///   Questions?
+/// ]
+/// ```
+///
+/// - config (dictionary): Configuration overrides for this slide. Use `config-xxx` functions
+///   to specify the configuration. For multiple configurations, use `utils.merge-dicts` to merge them.
+///
+/// - ..args (content): Optional custom content. If not provided, displays the presentation
+///   title and a default "Thank you for listening! Any question?" message.
 #let ending-slide(
   config: (:),
   ..args,
@@ -548,43 +666,116 @@
 })
 
 
-/// Touying stargazer theme.
+/// dmunipi (Dipartimento di Matematica, Università di Pisa) presentation theme.
+///
+/// A clean, professional theme designed for academic presentations at the University of Pisa's
+/// Department of Mathematics. Features the university branding and colors.
 ///
 /// Example:
 ///
-/// ```typst
-/// #show: stargazer-theme.with(aspect-ratio: "16-9", config-colors(primary: blue))`
-/// ```
+/// ```typ
+/// #show: dmunipi-theme.with(
+///   aspect-ratio: "16-9",
+///   section-slides: true,
 ///
-/// Consider using:
+///   config-common(
+///     handout: false,
+///   ),
 ///
-/// ```typst
-/// #set text(font: "Fira Sans", weight: "light", size: 20pt)`
-/// #show math.equation: set text(font: "Fira Math")
-/// #set strong(delta: 100)
-/// #set par(justify: true)
-/// ```
-/// The default colors:
+///   config-info(
+///     title: [Title of the presentation],
+///     author: [Your Name],
+///     short-title: [Short title],
+///     subtitle: [Subtitle of the presentation],
+///     course: [Name of the course],
+///     IDnumber: [012345],
+///     date: datetime.today(),
+///   ),
 ///
+///   config-store(
+///     fancy-footer: false,
+///     headless-statements: false,
+///     appendix-after-ending: true,
+///     toc-numbering: none,
+///     toc-marker: text(size: 1.5em, sym.triangle.filled.small.r),
+///   ),
 ///
-/// ```typst
-/// config-colors(
-///   primary: rgb("#005bac"),
-///   primary-dark: rgb("#004078"),
-///   secondary: rgb("#ffffff"),
-///   tertiary: rgb("#005bac"),
-///   neutral-lightest: rgb("#ffffff"),
-///   neutral-darkest: rgb("#000000"),
+///   config-colors(
+///     neutral-lightest: rgb("#ffffff"),
+///     neutral-darkest: rgb("#000000"),
+///     primary: rgb("#003476"),
+///     secondary: rgb("#00b9f2"),
+///   ),
 /// )
 /// ```
+/// 
+/// **config-common options:**
 ///
-/// - aspect-ratio (string): is the aspect ratio of the slides. The default is `16-9`.
+/// - handout (boolean): When `true`, disables `#pause` commands and generates a PDF suitable
+///   for printing. Default is `false`.
 ///
-/// - title (content, function): is the title in the header of the slide. The default is `self => utils.display-current-heading(depth: self.slide-level)`.
+/// **config-info options (presentation metadata):**
+///
+/// - title (content): Main title of the presentation. Required.
+///
+/// - author (content): Author name(s). Required.
+///
+/// - short-title (content, auto): Abbreviated title for the footer (when `fancy-footer: true`).
+///   If `auto`, uses the full title. Optional.
+///
+/// - subtitle (content): Subtitle for the presentation. Displayed on title slide. Optional.
+///
+/// - course (content): Course name or context. Displayed on title slide. Optional.
+///
+/// - IDnumber (content): Student or identification number. Displayed on title slide. Optional.
+///
+/// - date (datetime, content): Date to display on title slide. Can be a datetime object
+///   or formatted content. Default is `datetime.today()`.
+///
+/// **config-store options (theme behavior):**
+///
+/// - fancy-footer (boolean): When `true`, displays a footer containing author, title,
+///   and page numbers. When `false`, shows only page numbers. Default is `false`.
+///
+/// - headless-statements (boolean): Changes the style of theorem-like environments.
+///   When `false` (default), statements appear in colored blocks. When `true`, they
+///   appear as inline formatted text.
+///
+/// - appendix-after-ending (boolean): When `true` (default), slides after `#ending-slide()`
+///   are treated as appendix material and don't increment the slide counter.
+///
+/// - toc-numbering (string, none): Numbering format for table of contents items.
+///   Options: `none` (default, no numbers), `"1"`, `"1."`, etc.
+///   See Typst's numbering documentation for all formats.
+///
+/// - toc-marker (content, none): Bullet marker for table of contents items.
+///   Default is a right-pointing triangle. Set to `none` to disable.
+///   Examples: `text(size: .75em, sym.hexa.filled)`, `text(size: 1em, emoji.frog)`
+///
+/// **config-colors options (color scheme):**
+///
+/// - neutral-lightest (color): Background color. Default: `rgb("#ffffff")`.
+///
+/// - neutral-darkest (color): Text color. Default: `rgb("#000000")`.
+///
+/// - primary (color): Primary accent color used throughout the theme.
+///   Default: `rgb("#003476")`.
+///
+/// - secondary (color): Secondary accent color for links and highlights.
+///   Default: `rgb("#00b9f2")`.
+/// 
+/// **Main parameters:**
+///
+/// - aspect-ratio (string): The aspect ratio of the slides. Options: `"16-9"` (default) or `"4-3"`.
+/// 
+/// - section-slides (boolean): Whether to display a table of contents slide at each new section.
+///   You can skip specific sections by adding `<touying:skip>` after the heading. Default is `true`.
+/// 
+/// - ..args (arguments): Additional configuration options. Pass `config-common()`, `config-info()`,
+///   `config-store()`, and `config-colors()` here to configure the theme.
 #let dmunipi-theme(
   aspect-ratio: "16-9",
   section-slides: true,
-  handout: false,
   ..args,
   body,
 ) = {
@@ -639,6 +830,8 @@
       fancy-footer: false,
       headless-statements: false,
       appendix-after-ending: true,
+      toc-marker: text(size: 1.5em, sym.triangle.filled.small.r),
+      toc-numbering: none,
       header: self => {
         show: show-colors.with(self: self)
         set std.align(bottom)

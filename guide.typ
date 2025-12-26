@@ -480,6 +480,25 @@ To remove all the animations and only create the "final" slide for each slide, y
 )
 ```
 
+== Table of Contents style
+
+By default, the entries of the _"Table of Contents"-s_ are not numbered, and use a triangle as a marker.
+
+You can change this behaviour using respectively `config-store(toc-numbering: …)` and `config-store(toc-marker: …)`:
+
+```typ
+#show: dmunipi-theme.with(
+  // […]
+  // This will add a bee as marker, and numbers followed by a dot.
+  config-store(
+    toc-marker: text(size: 1em, emoji.bee, baseline: -.1em),
+    toc-numbering: "1.",
+  ),
+)
+```
+
+Setting either as `none` will disable it.
+
 == Headless statements
 
 #slide(config: config-store(headless-statements: true))[

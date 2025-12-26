@@ -41,6 +41,23 @@
 
     /// Automatically starts the appendix after the ending slide
     // appendix-after-ending: true,
+
+    /// The numbering to be used on the items in the table-of-contents.
+    /// If set to `none`, no numbering will be displayed
+    /// See [the documentation](https://typst.app/docs/reference/model/numbering/#parameters-numbering)
+    /// to see all the possible values, such as:
+    /// - "1", for simply displaying the number
+    /// - "1." to display the number followed by a dot
+    // toc-numbering: none,
+
+    /// Which marker to use for the bullet points of the table-of-contents
+    /// If set to `none`, no marker will be used
+    /// Try other values, such as:
+    /// - text(size: .75em, sym.hexa.filled)
+    /// - text(size: 2.5em, sym.bullet, baseline: .025em)
+    /// - text(size: 1em, emoji.bee, baseline: -.1em)
+    /// - text(size: 1em, emoji.frog, baseline: -.15em)
+    // toc-marker: text(size: 1.5em, sym.triangle.filled.small.r)
   ),
 
   config-common(
@@ -58,10 +75,10 @@
   /// Try changing it, for example with `rgb("#006565")` as primary and
   /// `rgb("#00d595")` as secondary
   config-colors(
-    //   neutral-lightest: rgb("#ffffff"),
-    //   neutral-darkest: rgb("#000000"),
-    //   primary: rgb("#003476"),
-    //   secondary: rgb("#00b9f2"),
+    // neutral-lightest: rgb("#ffffff"),
+    // neutral-darkest: rgb("#000000"),
+    // primary: rgb("#003476"),
+    // secondary: rgb("#00b9f2"),
   ),
 )
 
@@ -80,8 +97,6 @@
 #lorem(20)
 
 #ending-slide()
-
-#show: freeze-slide-counter
 
 = Appendix
 
