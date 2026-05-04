@@ -348,12 +348,12 @@
           set text(size: .9em)
 
           let content = (
-            text(
+            block(width: 60%, text(
               size: 1.2em,
               weight: "bold",
               fill: self.colors.primary,
               self.info.title,
-            ),
+            ))
           )
 
           if self.info.subtitle != none {
@@ -708,7 +708,7 @@
 ///   ),
 /// )
 /// ```
-/// 
+///
 /// **config-common options:**
 ///
 /// - handout (boolean): When `true`, disables `#pause` commands and generates a PDF suitable
@@ -763,14 +763,14 @@
 ///
 /// - secondary (color): Secondary accent color for links and highlights.
 ///   Default: `rgb("#00b9f2")`.
-/// 
+///
 /// **Main parameters:**
 ///
 /// - aspect-ratio (string): The aspect ratio of the slides. Options: `"16-9"` (default) or `"4-3"`.
-/// 
+///
 /// - section-slides (boolean): Whether to display a table of contents slide at each new section.
 ///   You can skip specific sections by adding `<touying:skip>` after the heading. Default is `true`.
-/// 
+///
 /// - ..args (arguments): Additional configuration options. Pass `config-common()`, `config-info()`,
 ///   `config-store()`, and `config-colors()` here to configure the theme.
 #let dmunipi-theme(
@@ -843,7 +843,7 @@
           self.colors.primary.to-hex(),
         )
 
-        stack(dir: ltr, spacing: 1.5em, image(bytes(logo), height: 100%), {
+        stack(dir: ltr, spacing: 1.5em, image(bytes(logo), height: 5.5em), {
           show: components.cell.with(inset: (y: .5em))
           stack(
             dir: ttb,

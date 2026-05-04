@@ -499,32 +499,34 @@ You can change this behaviour using respectively `config-store(toc-numbering: �
 
 Setting either as `none` will disable it.
 
-== Headless statements
+#set-config(config-page(margin: (top: 5em, bottom: 2em)))[
+  == Headless statements
 
-#slide(config: config-store(headless-statements: true))[
-  By default, statements such as theorems are rendered in a `#title-block` with the theorem title at the top. This might occupy too much space in some cases, and can be disabled by setting `config-store(headless-statements: true)`
+  #slide(config: config-store(headless-statements: true))[
+    By default, statements such as theorems are rendered in a `#title-block` with the theorem title at the top. This might occupy too much space in some cases, and can be disabled by setting `config-store(headless-statements: true)`
 
-  #grid(
-    columns: (1fr, auto, 1fr),
-    gutter: 1em,
-    align: horizon + left,
-    ```typ
-    #show: dmunipi-theme.with(
-      // […]
-      config-store(
-        headless-statements: true,
-      ),
+    #grid(
+      columns: (1fr, auto, 1fr),
+      gutter: 1em,
+      align: horizon + left,
+      ```typ
+      #show: dmunipi-theme.with(
+        // […]
+        config-store(
+          headless-statements: true,
+        ),
+      )
+
+      #theorem(title: "Euclid's Theorem")[
+        There are infinitely many primes.
+      ]
+      ```,
+      emoji.arrow.r.filled,
+      theorem(title: "Euclid's Theorem")[
+        There are infinitely many primes.
+      ],
     )
-
-    #theorem(title: "Euclid's Theorem")[
-      There are infinitely many primes.
-    ]
-    ```,
-    emoji.arrow.r.filled,
-    theorem(title: "Euclid's Theorem")[
-      There are infinitely many primes.
-    ],
-  )
+  ]
 ]
 
 
